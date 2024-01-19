@@ -1,6 +1,6 @@
 # CS210project
 
-In this data analysis project, I focused on exploring and visualizing email communication patterns using a dataset of emails sent and received. The project was divided into several key steps, including data export, organization, sentiment analysis, network analysis, and visualization.
+In this data analysis project, I focused on exploring and visualizing email communication patterns using a dataset of emails sent and received. I parsed my own mail datas for analysis.The project was divided into several key steps, including data export, organization, sentiment analysis, network analysis, and visualization.
 
 1. Data Export and Organization:
 The initial step involved exporting email data from the email client. I organized the exported data, obtained in MBOX format, into a structured format using Python. Key columns, such as Sender, Recipient, Date, Subject, and Content, were identified for further analysis.
