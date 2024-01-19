@@ -1,1 +1,81 @@
+import mailbox
+import pandas as pd
+from bs4 import BeautifulSoup  # Make sure to install the 'beautifulsoup4' package
+import matplotlib.pyplot as plt
+import seaborn as sns
+from wordcloud import WordCloud
+import networkx as nx
 
+
+# Replace 'path/to/your/mbox/file' with the actual path to your MBOX file
+mbox_file_path = r"C:\Users\Buse\takeout-20240118T200310Z-001\Takeout\Mail\All mail Including Spam and Trash.mbox"
+
+# Create a mailbox object from the MBOX file
+mbox = mailbox.mbox(mbox_file_path)
+
+# Create an empty list to store email data
+email_data = []
+
+# Iterate through each email in the MBOX file
+for message in mbox:
+    # Extract relevant information
+    sender = message.get('From')
+    recipients = message.get('To')
+    date = message.get('Date')
+    subject = message.get('Subject')
+
+    # Extract content from the email payload (handle multipart)
+    content = ""
+    if message.is_multipart():
+        for part in message.walk():
+            if part.get_content_type() == "text/plain":
+                content += part.get_payload(decode=True).decode('utf-8', errors='ignore')
+            elif part.get_content_type() == "text/html":
+                # Use BeautifulSoup to extract text from HTML content
+                soup = BeautifulSoup(part.get_payload(decode=True).decode('utf-8', errors='ignore'), 'html.parser')
+                content += soup.get_text(separator=' ', strip=True)
+    else:
+        content = message.get_payload(decode=True).decode('utf-8', errors='ignore')
+
+    # Append the information to the list
+    email_data.append({
+        'Sender': sender,
+        'Recipients': recipients,
+        'Date': date,
+        'Subject': subject,
+        'Content': content
+    })
+
+    # Print information for debugging
+    print(f"Sender: {sender}")
+    print(f"Recipients: {recipients}")
+    print(f"Date: {date}")
+    print(f"Subject: {subject}")
+    print(f"Content: {content}")
+    print("-" * 50)
+
+# Create a Pandas DataFrame from the email data
+df = pd.DataFrame(email_data)
+
+# Descriptive statistics for numerical data (if applicable)
+summary_stats = df.describe()
+
+# Count of emails sent/received
+count_emails_sent = df[df['Sender'].notnull()].shape[0]
+count_emails_received = df[df['Recipients'].notnull()].shape[0]
+
+# Most common sender/recipients
+most_common_sender = df['Sender'].mode().values[0]
+most_common_recipients = df['Recipients'].mode().values[0]
+
+# Display results
+print("Summary Statistics:")
+print(summary_stats)
+print("\nCount of Emails Sent/Received:")
+print(f"Sent: {count_emails_sent} emails")
+print(f"Received: {count_emails_received} emails")
+print("\nMost Common Sender/Recipients:")
+print(f"Most Common Sender: {most_common_sender}")
+print(f"Most Common Recipients: {most_common_recipients}")
+df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+df.set_index('Date', inplace=True)
